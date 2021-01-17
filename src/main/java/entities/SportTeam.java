@@ -34,7 +34,7 @@ public class SportTeam implements Serializable {
     @Column(name = "max_age")
     private int maxAge;
     
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private Sport sport;
     
     @ManyToMany(mappedBy = "sportTeams", cascade = CascadeType.ALL)
