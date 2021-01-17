@@ -3,7 +3,6 @@ package facades;
 import dto.PlayerDTO;
 import dto.SportDTO;
 import dto.SportTeamDTO;
-import dto.UserDTO;
 import entities.Sport;
 import entities.SportTeam;
 import errorhandling.AlreadyExists;
@@ -65,15 +64,22 @@ public class SportFacade {
         }
     }
     
-    public SportTeamDTO addSportTeam(SportTeamDTO teamDTO) throws MissingInput, NotFoundException {
+    public SportTeamDTO addSportTeam(SportTeamDTO teamDTO) throws MissingInput, NotFoundException, AlreadyExists {
         EntityManager em = emf.createEntityManager();
-        checkInput(teamDTO);
+        
+        Query q = em.createQuery("SELECT  s FROM SportTeam s WHERE s.teamName = :name");
+        q.setParameter("name", teamDTO.getTeamName());
+        
+        if (q.getSingleResult() != null) {
+            throw new AlreadyExists("A team with this name already exists");
+        }      
         
         if (teamDTO.getMaxAge() < teamDTO.getMinAge()) {
             throw new MissingInput("Max age must be higher than minimum age");
         }
         
-        SportTeam sportTeam = prepareSportTeam(teamDTO);
+        checkInput(teamDTO, em);
+        SportTeam sportTeam = prepareSportTeam(teamDTO, em);
         try {
             em.getTransaction().begin();
             em.persist(sportTeam);
@@ -85,15 +91,55 @@ public class SportFacade {
         
     }
     
-    private void checkInput(SportTeamDTO teamDTO, EntityManager em) throws MissingInput, AlreadyExists {
-        Query q = em.createQuery("SELECT  s FROM SportTeam s WHERE s.teamName = :name");
-        q.setParameter("name", teamDTO.getTeamName());
+    public List<SportTeamDTO> getAllSportTeams() {
+        EntityManager em = emf.createEntityManager();
+        TypedQuery q = em.createQuery("SELECT s FROM SportTeam s", SportTeam.class);
+        List<SportTeam> sportTeams = q.getResultList();
+        List<SportTeamDTO> sportTeamDTOs = new ArrayList<>();
         
-        if (q.getSingleResult() != null) {
-            throw new AlreadyExists("A team with this name already exists");
+        for (SportTeam s : sportTeams) {
+            SportTeamDTO sDTO = new SportTeamDTO(s);
+            sDTO.setPlayers(sDTO.getPlayerList(s.getMemberInfos()));
+            sDTO.setCoaches(sDTO.getCoachList(s.getCoaches()));
+            sportTeamDTOs.add(sDTO);
         }
+        return sportTeamDTOs;
+    }
+    
+    public SportTeamDTO editSportTeam(SportTeamDTO teamDTO) throws MissingInput, AlreadyExists {
+        EntityManager em = emf.createEntityManager();
+        SportTeam sportTeam = em.find(SportTeam.class, teamDTO.getId());
+        
+        checkInput(teamDTO, em);
+        modifyTeamInfo(sportTeam, teamDTO, em);
+        try {
+            em.getTransaction().begin();
+            em.persist(sportTeam);
+            em.getTransaction().commit();
+            return new SportTeamDTO(sportTeam);
+        } finally {
+            em.close();
+        }
+    }
+    
+    public SportTeamDTO deleteSportTeam(int id) {
+        EntityManager em = emf.createEntityManager();
+        SportTeam sportTeam = em.find(SportTeam.class, id);
+        
+        try {
+            em.getTransaction().begin();
+            em.remove(sportTeam);
+            em.getTransaction().commit();
+            return new SportTeamDTO(sportTeam);
+        } finally {
+            em.close();
+        }
+    }
+    
+    private void checkInput(SportTeamDTO teamDTO, EntityManager em) throws MissingInput, AlreadyExists {
         if (teamDTO.getTeamName().length() < 3 ||
-            teamDTO.getSport().length() < 3 ||
+            teamDTO.getSport().getName().length() < 3 ||
+            teamDTO.getSport().getDescription().length() < 3 ||
             teamDTO.getPricePerYear() < 1 ||
             teamDTO.getMinAge() < 1 ||
             teamDTO.getMaxAge() < 1 ||
@@ -103,9 +149,9 @@ public class SportFacade {
         } 
     }
     
-    private Sport getSport(String sportName, EntityManager em) throws NotFoundException {
+    private Sport getSport(SportDTO sportDTO, EntityManager em) throws NotFoundException {
         try {
-            Sport sport = em.find(Sport.class, sportName);
+            Sport sport = em.find(Sport.class, sportDTO.getId());
             if (sport == null) {
                 throw new NotFoundException("This sport does not exist in the database.");
             } else {
@@ -127,6 +173,16 @@ public class SportFacade {
                 sport
                 );
         return sportTeam;
+    }
+    
+    private void modifyTeamInfo(SportTeam sportTeam, SportTeamDTO teamDTO, EntityManager em) {
+        Sport sport = em.find(Sport.class, teamDTO.getSport().getId());
+        sportTeam.setTeamName(teamDTO.getTeamName());
+        sportTeam.setSport(sport);
+        sportTeam.setPricePerYear(teamDTO.getPricePerYear());
+        sportTeam.setMinAge(teamDTO.getMinAge());
+        sportTeam.setMaxAge(teamDTO.getMaxAge());
+        sportTeam.setDescription(teamDTO.getDescription());
     }
     
 }

@@ -7,12 +7,13 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "sport_team")
@@ -20,9 +21,10 @@ public class SportTeam implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "team_name", length = 25)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    
+    @Column(name = "team_name")
     private String teamName;
     
     @Column(name = "description")
@@ -40,10 +42,10 @@ public class SportTeam implements Serializable {
     @ManyToOne
     private Sport sport;
     
-    @ManyToMany(mappedBy = "sportTeams", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "sportTeams", cascade = CascadeType.PERSIST)
     private List<Coach> coaches = new ArrayList<>();
     
-    @OneToMany(mappedBy = "sportTeam", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "sportTeam", cascade = CascadeType.PERSIST)
     private List<MemberInfo> memberInfos = new ArrayList<>();
 
     public SportTeam(String teamName, String description, double pricePerYear, int minAge, int maxAge, Sport sport) {
@@ -56,6 +58,14 @@ public class SportTeam implements Serializable {
     }
 
     public SportTeam() {
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getTeamName() {
