@@ -1,5 +1,7 @@
 package facades;
 
+import dto.CoachDTO;
+import dto.PlayerDTO;
 import dto.SportDTO;
 import dto.SportTeamDTO;
 import dto.UserDTO;
@@ -135,6 +137,19 @@ public class SportFacadeTest {
     public void testDeleteSportTeam() {
         facade.deleteSportTeam(sportTeam.getId());
         assertEquals(0, facade.getAllSportTeams().size());
+    }
+    
+    @Test
+    public void testAddPlayerToTeam() {
+        PlayerDTO pDTO = facade.addPlayerToTeam(new PlayerDTO(player), sportTeam.getId());
+        assertTrue(pDTO.getMemberInfoDTOs().get(0).getSportTeamName().equals(sportTeam.getTeamName()));
+    }
+    
+    @Test
+    public void testAddCoachToTeam() {
+        CoachDTO cDTO = facade.addCoachToTeam(new CoachDTO(coach), sportTeam.getId());
+        List<SportTeamDTO> teams = facade.getAllSportTeams();
+        assertTrue(teams.get(0).getCoaches().get(0).getName().equals(cDTO.getName()));
     }
     
     @Test

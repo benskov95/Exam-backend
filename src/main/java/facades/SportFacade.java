@@ -1,8 +1,12 @@
 package facades;
 
+import dto.CoachDTO;
 import dto.PlayerDTO;
 import dto.SportDTO;
 import dto.SportTeamDTO;
+import entities.Coach;
+import entities.MemberInfo;
+import entities.Player;
 import entities.Sport;
 import entities.SportTeam;
 import errorhandling.AlreadyExists;
@@ -131,6 +135,37 @@ public class SportFacade {
             em.remove(sportTeam);
             em.getTransaction().commit();
             return new SportTeamDTO(sportTeam);
+        } finally {
+            em.close();
+        }
+    }
+    
+    public PlayerDTO addPlayerToTeam(PlayerDTO pDTO, int teamId) {
+        EntityManager em = emf.createEntityManager();
+        SportTeam sportTeam = em.find(SportTeam.class, teamId);
+        Player player = em.find(Player.class, pDTO.getId());
+        
+        MemberInfo memberInfo = new MemberInfo(false, player, sportTeam);
+        try {
+            em.getTransaction().begin();
+            sportTeam.getMemberInfos().add(memberInfo);
+            em.getTransaction().commit();
+            return new PlayerDTO(player);
+        } finally {
+            em.close();
+        }
+    }
+    
+    public CoachDTO addCoachToTeam(CoachDTO cDTO, int teamId) {
+        EntityManager em = emf.createEntityManager();
+        SportTeam sportTeam = em.find(SportTeam.class, teamId);
+        Coach coach = em.find(Coach.class, cDTO.getId());
+        
+        try {
+            em.getTransaction().begin();
+            sportTeam.getCoaches().add(coach);
+            em.getTransaction().commit();
+            return new CoachDTO(coach);
         } finally {
             em.close();
         }

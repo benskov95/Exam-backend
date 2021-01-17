@@ -40,6 +40,7 @@ public class SportResource {
     }
     
     @POST
+    @RolesAllowed("admin")
     @Path("team")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
@@ -58,6 +59,7 @@ public class SportResource {
     }
     
     @PUT
+    @RolesAllowed("admin")
     @Path("team/{id}")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
@@ -69,6 +71,7 @@ public class SportResource {
     }
     
     @DELETE
+    @RolesAllowed("admin")
     @Path("team/{id}")
     @Produces({MediaType.APPLICATION_JSON})
     public String deleteSportTeam(@PathParam("id") int id) {
