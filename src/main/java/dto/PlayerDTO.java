@@ -17,6 +17,8 @@ public class PlayerDTO {
     public PlayerDTO(Player player) {
         this.id = player.getId();
         this.name = player.getName();
+        this.email = player.getEmail();
+        this.phone = player.getPhone();
         this.age = player.getAge();
         this.memberInfoDTOs = getInfoList(player.getMemberInfos());
     }

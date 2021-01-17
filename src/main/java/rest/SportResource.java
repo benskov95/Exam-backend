@@ -28,7 +28,7 @@ public class SportResource {
     @RolesAllowed("admin")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
-    public String addSport(String sport) throws  AuthenticationException, MissingInput {
+    public String addSport(String sport) throws  AuthenticationException, MissingInput, AlreadyExists {
         SportDTO SportDTO = GSON.fromJson(sport, SportDTO.class);
         SportDTO newSport = SPORT_FACADE.addSport(SportDTO);
         return GSON.toJson(newSport);
@@ -60,14 +60,22 @@ public class SportResource {
         return GSON.toJson(sportTeamDTOs);
     }
     
+    @GET
+    @RolesAllowed("admin")
+    @Path("team/{id}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public String getSportTeamById(@PathParam("id") int id) {
+        SportTeamDTO teamDTO = SPORT_FACADE.getSportTeamById(id);
+        return GSON.toJson(teamDTO);
+    }
+    
     @PUT
     @RolesAllowed("admin")
     @Path("team/{id}")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
-    public String editSportTeam(String sportTeam, @PathParam("id") int id) throws MissingInput, AlreadyExists {
+    public String editSportTeam(String sportTeam) throws MissingInput, AlreadyExists {
         SportTeamDTO teamDTO = GSON.fromJson(sportTeam, SportTeamDTO.class);
-        teamDTO.setId(id);
         SportTeamDTO editedDTO = SPORT_FACADE.editSportTeam(teamDTO);
         return GSON.toJson(editedDTO);
     }
@@ -93,14 +101,23 @@ public class SportResource {
     }
     
     @POST
-    @Path("team/{teamIid}/player")
+    @Path("team/{teamId}/player")
     @RolesAllowed("player")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
-    public String addPlayerToTeam(String player, @PathParam("teamId") int teamId) {
+    public String addPlayerToTeam(String player, @PathParam("teamId") int teamId) throws AlreadyExists {
         PlayerDTO pDTO = GSON.fromJson(player, PlayerDTO.class);
         PlayerDTO addedDTO = SPORT_FACADE.addPlayerToTeam(pDTO, teamId);
         return GSON.toJson(addedDTO);
+    }
+    
+    @GET
+    @Path("player/{username}")
+    @RolesAllowed("player")
+    @Produces({MediaType.APPLICATION_JSON})
+    public String getPlayerByUsername(@PathParam("username") String username) {
+        PlayerDTO pDTO = SPORT_FACADE.getPlayerByUsername(username);
+        return GSON.toJson(pDTO);
     }
     
     @POST
@@ -115,14 +132,23 @@ public class SportResource {
     }
     
     @POST
-    @Path("team/{teamIid}/coach")
+    @Path("team/{teamId}/coach")
     @RolesAllowed("coach")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
-    public String addCoachToTeam(String coach, @PathParam("teamId") int teamId) {
+    public String addCoachToTeam(String coach, @PathParam("teamId") int teamId) throws AlreadyExists {
         CoachDTO cDTO = GSON.fromJson(coach, CoachDTO.class);
         CoachDTO addedDTO = SPORT_FACADE.addCoachToTeam(cDTO, teamId);
         return GSON.toJson(addedDTO);
+    }
+    
+    @GET
+    @Path("coach/{username}")
+    @RolesAllowed("coach")
+    @Produces({MediaType.APPLICATION_JSON})
+    public String getCoachByUsername(@PathParam("username") String username) {
+        CoachDTO cDTO = SPORT_FACADE.getCoachByUsername(username);
+        return GSON.toJson(cDTO);
     }
     
 }

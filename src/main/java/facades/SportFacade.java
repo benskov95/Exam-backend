@@ -34,9 +34,15 @@ public class SportFacade {
         return instance;
     }
     
-    public SportDTO addSport(SportDTO sportDTO) throws MissingInput {
+    public SportDTO addSport(SportDTO sportDTO) throws MissingInput, AlreadyExists {
         EntityManager em = emf.createEntityManager();
         Sport sport = new Sport(sportDTO.getName(), sportDTO.getDescription());
+        Query q = em.createQuery("SELECT s FROM Sport s WHERE s.name = :name");
+        q.setParameter("name", sportDTO.getName());
+        
+        if (q.getResultList().size() > 0) {
+            throw new AlreadyExists("A sport with this name already exists");
+        }      
         
         if (sport.getName().length() < 3 || sport.getDescription().length() < 3) {
             throw new MissingInput("Name and description must be minimum 3 characters long.");
@@ -112,6 +118,16 @@ public class SportFacade {
         return sportTeamDTOs;
     }
     
+    public SportTeamDTO getSportTeamById(int id) {
+        EntityManager em = emf.createEntityManager();
+        try {
+        SportTeam sportTeam = em.find(SportTeam.class, id);
+        return new SportTeamDTO(sportTeam);
+        } finally {
+            em.close();
+        }
+    }
+    
     public SportTeamDTO editSportTeam(SportTeamDTO teamDTO) throws MissingInput, AlreadyExists {
         EntityManager em = emf.createEntityManager();
         SportTeam sportTeam = em.find(SportTeam.class, teamDTO.getId());
@@ -161,10 +177,16 @@ public class SportFacade {
         }
     }
     
-    public PlayerDTO addPlayerToTeam(PlayerDTO pDTO, int teamId) {
+    public PlayerDTO addPlayerToTeam(PlayerDTO pDTO, int teamId) throws AlreadyExists {
         EntityManager em = emf.createEntityManager();
         SportTeam sportTeam = em.find(SportTeam.class, teamId);
         Player player = em.find(Player.class, pDTO.getId());
+        
+        for (MemberInfo m : player.getMemberInfos()) {
+            if (m.getSportTeam().getId() == teamId) {
+                throw new AlreadyExists("You're already in this team.");
+            }
+        }
         
         MemberInfo memberInfo = new MemberInfo(false, player, sportTeam);
         try {
@@ -196,13 +218,20 @@ public class SportFacade {
         }
     }
     
-    public CoachDTO addCoachToTeam(CoachDTO cDTO, int teamId) {
+    public CoachDTO addCoachToTeam(CoachDTO cDTO, int teamId) throws AlreadyExists {
         EntityManager em = emf.createEntityManager();
         SportTeam sportTeam = em.find(SportTeam.class, teamId);
         Coach coach = em.find(Coach.class, cDTO.getId());
         
+        for (SportTeam s : coach.getSportTeams()) {
+            if (s.getId() == teamId) {
+                throw new AlreadyExists("You're already in this team.");
+            }
+        }
+        
         try {
             em.getTransaction().begin();
+            coach.getSportTeams().add(sportTeam);
             sportTeam.getCoaches().add(coach);
             em.getTransaction().commit();
             return new CoachDTO(coach);
@@ -211,10 +240,30 @@ public class SportFacade {
         }
     }
     
+    public PlayerDTO getPlayerByUsername(String username) {
+        EntityManager em = emf.createEntityManager();
+        Query q = em.createQuery("SELECT p FROM Player p WHERE p.user.username = :username");
+        q.setParameter("username", username);
+        Player player = (Player) q.getSingleResult();
+        return new PlayerDTO(player);
+    }
+    
+    public CoachDTO getCoachByUsername(String username) {
+        EntityManager em = emf.createEntityManager();
+        Query q = em.createQuery("SELECT c FROM Coach c WHERE c.user.username = :username");
+        q.setParameter("username", username);
+        Coach coach = (Coach) q.getSingleResult();
+        return new CoachDTO(coach);
+    }
+    
     private void checkInput(SportTeamDTO teamDTO, EntityManager em) throws MissingInput, AlreadyExists {
+        if (teamDTO.getSport().getName() != null) {
+            if (teamDTO.getSport().getName().length() < 3 ||
+                teamDTO.getSport().getDescription().length() < 3) {
+                throw new MissingInput("Sport name or description must be minimum 3 characters.");
+            }
+        }
         if (teamDTO.getTeamName().length() < 3 ||
-            teamDTO.getSport().getName().length() < 3 ||
-            teamDTO.getSport().getDescription().length() < 3 ||
             teamDTO.getPricePerYear() < 1 ||
             teamDTO.getMinAge() < 1 ||
             teamDTO.getMaxAge() < 1 ||
