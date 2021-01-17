@@ -1,8 +1,14 @@
 package facades;
 
+import dto.PlayerDTO;
 import dto.SportDTO;
+import dto.SportTeamDTO;
+import dto.UserDTO;
 import entities.Sport;
+import entities.SportTeam;
+import errorhandling.AlreadyExists;
 import errorhandling.MissingInput;
+import errorhandling.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -57,6 +63,70 @@ public class SportFacade {
         } finally {
             em.close();
         }
+    }
+    
+    public SportTeamDTO addSportTeam(SportTeamDTO teamDTO) throws MissingInput, NotFoundException {
+        EntityManager em = emf.createEntityManager();
+        checkInput(teamDTO);
+        
+        if (teamDTO.getMaxAge() < teamDTO.getMinAge()) {
+            throw new MissingInput("Max age must be higher than minimum age");
+        }
+        
+        SportTeam sportTeam = prepareSportTeam(teamDTO);
+        try {
+            em.getTransaction().begin();
+            em.persist(sportTeam);
+            em.getTransaction().commit();
+            return new SportTeamDTO(sportTeam);
+        } finally {
+            em.close();
+        }
+        
+    }
+    
+    private void checkInput(SportTeamDTO teamDTO, EntityManager em) throws MissingInput, AlreadyExists {
+        Query q = em.createQuery("SELECT  s FROM SportTeam s WHERE s.teamName = :name");
+        q.setParameter("name", teamDTO.getTeamName());
+        
+        if (q.getSingleResult() != null) {
+            throw new AlreadyExists("A team with this name already exists");
+        }
+        if (teamDTO.getTeamName().length() < 3 ||
+            teamDTO.getSport().length() < 3 ||
+            teamDTO.getPricePerYear() < 1 ||
+            teamDTO.getMinAge() < 1 ||
+            teamDTO.getMaxAge() < 1 ||
+            teamDTO.getDescription().length() < 3) 
+        {
+            throw new MissingInput("All fields must be filled out.");
+        } 
+    }
+    
+    private Sport getSport(String sportName, EntityManager em) throws NotFoundException {
+        try {
+            Sport sport = em.find(Sport.class, sportName);
+            if (sport == null) {
+                throw new NotFoundException("This sport does not exist in the database.");
+            } else {
+                return sport;
+            }
+        } finally {
+            em.close();
+        }
+    }
+    
+    private SportTeam prepareSportTeam(SportTeamDTO teamDTO, EntityManager em) throws NotFoundException {
+        Sport sport = getSport(teamDTO.getSport(), em);
+        SportTeam sportTeam =  new SportTeam(
+                teamDTO.getTeamName(), 
+                teamDTO.getDescription(),
+                teamDTO.getPricePerYear(),
+                teamDTO.getMinAge(), 
+                teamDTO.getMaxAge(),
+                sport
+                );
+        return sportTeam;
     }
     
 }

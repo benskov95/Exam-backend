@@ -25,6 +25,9 @@ public class SportTeam implements Serializable {
     @Column(name = "team_name", length = 25)
     private String teamName;
     
+    @Column(name = "description")
+    private String description;
+    
     @Column(name = "price_per_year")
     private double pricePerYear;
     
@@ -43,8 +46,9 @@ public class SportTeam implements Serializable {
     @OneToMany(mappedBy = "sportTeam", cascade = CascadeType.ALL)
     private List<MemberInfo> memberInfos = new ArrayList<>();
 
-    public SportTeam(String teamName, double pricePerYear, int minAge, int maxAge, Sport sport) {
+    public SportTeam(String teamName, String description, double pricePerYear, int minAge, int maxAge, Sport sport) {
         this.teamName = teamName;
+        this.description = description;
         this.pricePerYear = pricePerYear;
         this.minAge = minAge;
         this.maxAge = maxAge;
@@ -60,6 +64,14 @@ public class SportTeam implements Serializable {
 
     public void setTeamName(String teamName) {
         this.teamName = teamName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public double getPricePerYear() {
