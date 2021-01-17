@@ -12,10 +12,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
+@NamedQuery(name = "SportTeam.deleteAllRows", query = "DELETE FROM SportTeam")
 @Table(name = "sport_team")
 public class SportTeam implements Serializable {
 
@@ -45,7 +47,7 @@ public class SportTeam implements Serializable {
     @ManyToMany(mappedBy = "sportTeams", cascade = CascadeType.PERSIST)
     private List<Coach> coaches = new ArrayList<>();
     
-    @OneToMany(mappedBy = "sportTeam", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "sportTeam", cascade = CascadeType.ALL)
     private List<MemberInfo> memberInfos = new ArrayList<>();
 
     public SportTeam(String teamName, String description, double pricePerYear, int minAge, int maxAge, Sport sport) {

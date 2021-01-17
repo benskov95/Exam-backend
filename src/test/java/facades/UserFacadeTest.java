@@ -54,6 +54,11 @@ public class UserFacadeTest {
         both = new User("user_admin", "test123");
         try {
             em.getTransaction().begin();
+            em.createNamedQuery("MemberInfo.deleteAllRows").executeUpdate();
+            em.createNamedQuery("SportTeam.deleteAllRows").executeUpdate();
+            em.createNamedQuery("Sport.deleteAllRows").executeUpdate();
+            em.createNamedQuery("Coach.deleteAllRows").executeUpdate();
+            em.createNamedQuery("Player.deleteAllRows").executeUpdate();
             em.createNamedQuery("Roles.deleteAllRows").executeUpdate();
             em.createNamedQuery("User.deleteAllRows").executeUpdate();
             Role userRole = new Role("user");

@@ -9,10 +9,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 
 @Entity
+@NamedQuery(name = "MemberInfo.deleteAllRows", query = "DELETE FROM MemberInfo")
 @Table(name = "member_info")
 public class MemberInfo implements Serializable {
 
@@ -32,7 +34,7 @@ public class MemberInfo implements Serializable {
     @Column(name = "date_joined")
     private Date dateJoined;
     
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private Player player;
     
     @ManyToOne

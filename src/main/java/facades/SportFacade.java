@@ -67,10 +67,10 @@ public class SportFacade {
     public SportTeamDTO addSportTeam(SportTeamDTO teamDTO) throws MissingInput, NotFoundException, AlreadyExists {
         EntityManager em = emf.createEntityManager();
         
-        Query q = em.createQuery("SELECT  s FROM SportTeam s WHERE s.teamName = :name");
+        Query q = em.createQuery("SELECT s FROM SportTeam s WHERE s.teamName = :name");
         q.setParameter("name", teamDTO.getTeamName());
         
-        if (q.getSingleResult() != null) {
+        if (q.getResultList().size() > 0) {
             throw new AlreadyExists("A team with this name already exists");
         }      
         
@@ -150,16 +150,12 @@ public class SportFacade {
     }
     
     private Sport getSport(SportDTO sportDTO, EntityManager em) throws NotFoundException {
-        try {
             Sport sport = em.find(Sport.class, sportDTO.getId());
             if (sport == null) {
                 throw new NotFoundException("This sport does not exist in the database.");
             } else {
                 return sport;
             }
-        } finally {
-            em.close();
-        }
     }
     
     private SportTeam prepareSportTeam(SportTeamDTO teamDTO, EntityManager em) throws NotFoundException {
