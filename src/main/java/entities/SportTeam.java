@@ -1,11 +1,14 @@
 package entities;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -29,6 +32,12 @@ public class SportTeam implements Serializable {
     
     @ManyToOne
     private Sport sport;
+    
+    @ManyToMany(mappedBy = "sportTeams")
+    private List<Coach> coaches;
+    
+    @OneToMany(mappedBy = "sportTeam")
+    private List<MemberInfo> memberInfos;
 
     public SportTeam(String teamName, double pricePerYear, int minAge, int maxAge) {
         this.teamName = teamName;
@@ -79,7 +88,21 @@ public class SportTeam implements Serializable {
     public void setSport(Sport sport) {
         this.sport = sport;
     }
-    
-    
+
+    public List<Coach> getCoaches() {
+        return coaches;
+    }
+
+    public void setCoaches(List<Coach> coaches) {
+        this.coaches = coaches;
+    }
+
+    public List<MemberInfo> getMemberInfos() {
+        return memberInfos;
+    }
+
+    public void setMemberInfos(List<MemberInfo> memberInfos) {
+        this.memberInfos = memberInfos;
+    }
     
 }
