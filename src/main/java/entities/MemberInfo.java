@@ -2,15 +2,18 @@ package entities;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 
 @Entity
+@Table(name = "member_info")
 public class MemberInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -29,16 +32,17 @@ public class MemberInfo implements Serializable {
     @Column(name = "date_joined")
     private Date dateJoined;
     
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Player player;
     
     @ManyToOne
     private SportTeam sportTeam;
 
-    public MemberInfo(boolean paid, Date datePaid, Player player) {
+    public MemberInfo(boolean paid, Player player, SportTeam sportTeam) {
         this.paid = paid;
-        this.datePaid = datePaid;
+        this.dateJoined = new Date();
         this.player = player;
+        this.sportTeam = sportTeam;
     }
 
     public MemberInfo() {
@@ -82,6 +86,14 @@ public class MemberInfo implements Serializable {
 
     public void setPlayer(Player player) {
         this.player = player;
-    } 
+    }
+
+    public SportTeam getSportTeam() {
+        return sportTeam;
+    }
+
+    public void setSportTeam(SportTeam sportTeam) {
+        this.sportTeam = sportTeam;
+    }
     
 }

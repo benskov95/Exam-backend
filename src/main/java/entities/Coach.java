@@ -1,16 +1,21 @@
 package entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "coach")
 public class Coach implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -18,8 +23,8 @@ public class Coach implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     
-    @Column(name = "username")
-    @OneToOne
+    @JoinColumn(name = "username")
+    @OneToOne(cascade = CascadeType.ALL)
     private User user;
     
     @Column(name = "name")
@@ -32,12 +37,13 @@ public class Coach implements Serializable {
     private String phone;
     
     @ManyToMany
-    private List<SportTeam> sportTeams;
+    private List<SportTeam> sportTeams = new ArrayList<>();
 
-    public Coach(String name, String email, String phone) {
+    public Coach(String name, String email, String phone, User user) {
         this.name = name;
         this.email = email;
         this.phone = phone;
+        this.user = user;
     }
     
     public Coach() {

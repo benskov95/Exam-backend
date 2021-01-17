@@ -2,15 +2,19 @@ package entities;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "player")
 public class Player implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -18,8 +22,8 @@ public class Player implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     
-    @Column(name = "username")
-    @OneToOne
+    @JoinColumn(name = "username")
+    @OneToOne(cascade = CascadeType.ALL)
     private User user;
     
     @Column(name = "name")
@@ -37,11 +41,12 @@ public class Player implements Serializable {
     @OneToMany(mappedBy = "player")
     private List<MemberInfo> memberInfos;
 
-    public Player(String name, String email, String phone, int age) {
+    public Player(String name, String email, String phone, int age, User user) {
         this.name = name;
         this.email = email;
         this.phone = phone;
         this.age = age;
+        this.user = user;
     }
 
     public Player() {
