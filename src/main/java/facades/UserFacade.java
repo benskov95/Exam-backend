@@ -128,6 +128,8 @@ public class UserFacade {
             em.getTransaction().begin();
             em.persist(new Role("user"));
             em.persist(new Role("admin"));
+            em.persist(new Role("player"));
+            em.persist(new Role("coach"));
             em.getTransaction().commit();
         }
     }

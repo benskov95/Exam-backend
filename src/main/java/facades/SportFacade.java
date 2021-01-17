@@ -7,8 +7,10 @@ import dto.SportTeamDTO;
 import entities.Coach;
 import entities.MemberInfo;
 import entities.Player;
+import entities.Role;
 import entities.Sport;
 import entities.SportTeam;
+import entities.User;
 import errorhandling.AlreadyExists;
 import errorhandling.MissingInput;
 import errorhandling.NotFoundException;
@@ -140,6 +142,25 @@ public class SportFacade {
         }
     }
     
+    public PlayerDTO addPlayer(PlayerDTO pDTO, String username) {
+        EntityManager em = emf.createEntityManager();
+        User user = em.find(User.class, username);
+        Query q = em.createQuery("SELECT r FROM Role r  WHERE r.roleName = :name");
+        q.setParameter("name", "player");
+        
+        user.getRoleList().add((Role) q.getSingleResult());
+        Player player = new Player(pDTO.getName(), pDTO.getEmail(), pDTO.getPhone(), pDTO.getAge(), user);
+        
+        try {
+            em.getTransaction().begin();
+            em.persist(player);
+            em.getTransaction().commit();
+            return new PlayerDTO(player);
+        } finally {
+            em.close();
+        }
+    }
+    
     public PlayerDTO addPlayerToTeam(PlayerDTO pDTO, int teamId) {
         EntityManager em = emf.createEntityManager();
         SportTeam sportTeam = em.find(SportTeam.class, teamId);
@@ -151,6 +172,25 @@ public class SportFacade {
             sportTeam.getMemberInfos().add(memberInfo);
             em.getTransaction().commit();
             return new PlayerDTO(player);
+        } finally {
+            em.close();
+        }
+    }
+    
+    public CoachDTO addCoach(CoachDTO cDTO, String username) {
+        EntityManager em = emf.createEntityManager();
+        User user = em.find(User.class, username);
+        Query q = em.createQuery("SELECT r FROM Role r  WHERE r.roleName = :name");
+        q.setParameter("name", "coach");
+        
+        user.getRoleList().add((Role) q.getSingleResult());
+        Coach coach = new Coach(cDTO.getName(), cDTO.getEmail(), cDTO.getPhone(), user);
+        
+        try {
+            em.getTransaction().begin();
+            em.persist(coach);
+            em.getTransaction().commit();
+            return new CoachDTO(coach);
         } finally {
             em.close();
         }

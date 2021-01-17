@@ -2,6 +2,8 @@ package rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dto.CoachDTO;
+import dto.PlayerDTO;
 import dto.SportDTO;
 import dto.SportTeamDTO;
 import errorhandling.AlreadyExists;
@@ -78,4 +80,49 @@ public class SportResource {
         SportTeamDTO deletedDTO = SPORT_FACADE.deleteSportTeam(id);
         return GSON.toJson(deletedDTO);
     }
+    
+    @POST
+    @Path("player/{username}")
+    @RolesAllowed("user")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public String addPlayer(String player, @PathParam("username") String username) {
+        PlayerDTO pDTO = GSON.fromJson(player, PlayerDTO.class);
+        PlayerDTO addedDTO = SPORT_FACADE.addPlayer(pDTO, username);
+        return GSON.toJson(addedDTO);
+    }
+    
+    @POST
+    @Path("team/{teamIid}/player")
+    @RolesAllowed("player")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public String addPlayerToTeam(String player, @PathParam("teamId") int teamId) {
+        PlayerDTO pDTO = GSON.fromJson(player, PlayerDTO.class);
+        PlayerDTO addedDTO = SPORT_FACADE.addPlayerToTeam(pDTO, teamId);
+        return GSON.toJson(addedDTO);
+    }
+    
+    @POST
+    @Path("coach/{username}")
+    @RolesAllowed("user")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public String addCoach(String coach, @PathParam("username") String username) {
+        CoachDTO cDTO = GSON.fromJson(coach, CoachDTO.class);
+        CoachDTO addedDTO = SPORT_FACADE.addCoach(cDTO, username);
+        return GSON.toJson(addedDTO);
+    }
+    
+    @POST
+    @Path("team/{teamIid}/coach")
+    @RolesAllowed("coach")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public String addCoachToTeam(String coach, @PathParam("teamId") int teamId) {
+        CoachDTO cDTO = GSON.fromJson(coach, CoachDTO.class);
+        CoachDTO addedDTO = SPORT_FACADE.addCoachToTeam(cDTO, teamId);
+        return GSON.toJson(addedDTO);
+    }
+    
 }
