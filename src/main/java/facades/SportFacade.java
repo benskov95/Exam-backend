@@ -191,6 +191,8 @@ public class SportFacade {
         MemberInfo memberInfo = new MemberInfo(false, player, sportTeam);
         try {
             em.getTransaction().begin();
+            player.getMemberInfos().add(memberInfo);
+            memberInfo.setSportTeam(sportTeam);
             sportTeam.getMemberInfos().add(memberInfo);
             em.getTransaction().commit();
             return new PlayerDTO(player);

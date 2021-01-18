@@ -37,7 +37,7 @@ public class LoginEndpoint {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response login(String jsonString) throws AuthenticationException {
+  public String login(String jsonString) throws AuthenticationException {
     JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
     String username = json.get("username").getAsString();
     String password = json.get("password").getAsString();
@@ -48,7 +48,7 @@ public class LoginEndpoint {
       JsonObject responseJson = new JsonObject();
       responseJson.addProperty("username", username);
       responseJson.addProperty("token", token);
-      return Response.ok(new Gson().toJson(responseJson)).build();
+      return new Gson().toJson(responseJson);
 
     } catch (JOSEException | AuthenticationException ex) {
       if (ex instanceof AuthenticationException) {
